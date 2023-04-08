@@ -2,9 +2,9 @@ from Games import GameState
 
 
 class Agent():
-    memo = {}
 
     def __init__(self, depth=5):
+        self.memo = {}
         self.minimaxMethod = None
         self.depth = depth
 

@@ -106,6 +106,29 @@ class TicTacToe(GameState):
 
         # Board is full (tied)
         return True
+    
+    def getWinner(self):
+        # Check rows
+        for row in range(self.k):
+            if all(self.board[row][col] == self.board[row][0] and
+                   self.board[row][0] != ' ' for col in range(self.k)):
+                return self.board[row][0]
+        
+        # Check columns
+        for col in range(self.k):
+            if all(self.board[row][col] == self.board[0][col] and
+                   self.board[0][col] != ' ' for row in range(self.k)):
+                return self.board[0][col]
+
+        # Check diagonals
+        if all(self.board[i][i] == self.board[0][0] and
+               self.board[0][0] != ' ' for i in range(self.k)):
+            return self.board[0][0]
+        if all(self.board[i][self.k - i - 1] == self.board[0][self.k - 1] and
+               self.board[0][self.k - 1] != ' ' for i in range(self.k)):
+            return self.board[0][self.k - 1]
+        
+        return None
 
     def getChildren(self):
         children = []
