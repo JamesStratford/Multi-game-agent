@@ -40,7 +40,7 @@ class AIPlayingGUI():
         self.ai1Label = ctk.CTkLabel(master=self.ai1Frame,
                                      text="AI Player 1")
         self.ai1Label.pack()
-        options = ['Minimax', 'Alpha Beta Pruning', 'Dynamic']
+        options = ['Baseline', 'Minimax', 'Alpha Beta Pruning', 'Dynamic']
         self.ai1MethodCombo = ctk.CTkComboBox(master=self.ai1Frame,
                                               values=options,
                                               width=200)
@@ -147,19 +147,19 @@ class TicTacToeGUI(AIPlayingGUI):
         self.ai1Label.configure(text="Player X")
         self.ai2Label.configure(text="Player O")
 
-        self.startMove = ctk.StringVar(value="X")
+        self.startingPlayer = ctk.StringVar(value='X')
 
         def changeStartingPlayer():
             if self.gameMutex is False:
-                self.gamestate.move = self.startMove.get()
+                self.gamestate.move = self.startingPlayer.get()
 
         self.startMoveAIOne = ctk.CTkRadioButton(master=self.ai1Frame,
-                                                 variable=self.startMove,
+                                                 variable=self.startingPlayer,
                                                  value='X',
                                                  text="Starting",
                                                  command=changeStartingPlayer)
         self.startMoveAITwo = ctk.CTkRadioButton(master=self.ai2Frame,
-                                                 variable=self.startMove,
+                                                 variable=self.startingPlayer,
                                                  value='O',
                                                  text="Starting",
                                                  command=changeStartingPlayer)
@@ -176,7 +176,7 @@ class TicTacToeGUI(AIPlayingGUI):
                                         text="",
                                         width=buttonSize,
                                         height=buttonSize,
-                                        font=ctk.CTkFont(size=20))
+                                        font=ctk.CTkFont(size=50))
             self.button.grid(row=x, column=y, pady=2, padx=2)
 
         def set(self, char):
@@ -193,37 +193,46 @@ class TicTacToeGUI(AIPlayingGUI):
 
     def __play(self):
         self.gameMutex = True
-        methods = ['minimax', 'alphabeta', 'dynamic']
-        aiOneModeStr = self.ai1MethodCombo.get()
-        if aiOneModeStr == 'Minimax':
-            aiOneMode = methods[0]
-        elif aiOneModeStr == 'Alpha Beta Pruning':
-            aiOneMode = methods[1]
-        else:
-            aiOneMode = methods[2]
+        
+        def getMode():
+            methods = ['baseline', 'minimax', 'alphabeta', 'dynamic']
+            aiOneModeStr = self.ai1MethodCombo.get()
 
-        aiTwoModeStr = self.ai2MethodCombo.get()
-        if aiTwoModeStr == 'Minimax':
-            aiTwoMode = methods[0]
-        elif aiTwoModeStr == 'Alpha Beta Pruning':
-            aiTwoMode = methods[1]
-        else:
-            aiTwoMode = methods[2]
+            if aiOneModeStr == 'Baseline':
+                aiOneMode = methods[0]
+            elif aiOneModeStr == 'Minimax':
+                aiOneMode = methods[1]
+            elif aiOneModeStr == 'Alpha Beta Pruning':
+                aiOneMode = methods[2]
+            else:
+                aiOneMode = methods[3]
 
+            aiTwoModeStr = self.ai2MethodCombo.get()
+            if aiTwoModeStr == 'Baseline':
+                aiTwoMode = methods[0]
+            elif aiTwoModeStr == 'Minimax':
+                aiTwoMode = methods[1]
+            elif aiTwoModeStr == 'Alpha Beta Pruning':
+                aiTwoMode = methods[2]
+            else:
+                aiTwoMode = methods[3]
+
+            return (aiOneMode, aiTwoMode,)
+            
         while not self.gamestate.isTerminal():
             if self.gamestate.move == 'X':   # AI 1
                 self.gamestate.move = 'O'
                 child = self.aiPlayerOne.bestMove(self.gamestate,
                                                   self.aiPlayerOne.depth,
                                                   True,
-                                                  aiOneMode)
+                                                  getMode()[0])
                 self.gamestate.board = child.board
             else:                       # AI 2
                 self.gamestate.move = 'X'
                 child = self.aiPlayerTwo.bestMove(self.gamestate,
                                                   self.aiPlayerTwo.depth,
                                                   False,
-                                                  aiTwoMode)
+                                                  getMode()[1])
                 self.gamestate.board = child.board
             self.display()
             if self.slowTime:
@@ -255,7 +264,7 @@ class TicTacToeGUI(AIPlayingGUI):
         AIPlayingGUI.start(self)
 
     def reset(self):
-        self.gamestate = TicTacToe(move=self.startMove,
+        self.gamestate = TicTacToe(move=self.startingPlayer.get(),
                                    nDimensions=self.gamestate.k)
         for row in self.XO_points:
             for xo_point in row:

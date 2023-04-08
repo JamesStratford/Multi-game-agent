@@ -14,12 +14,17 @@ class Agent():
         'alphabeta' for alpha beta pruning minimax
         'dynamic' for AB minimax using memoization
         """
-        if mode == "minimax":
+        if mode == "baseline":
+            self.minimaxMethod = self.__baseline
+        elif mode == "minimax":
             self.minimaxMethod = self.__miniMax
         elif mode == "alphabeta":
             self.minimaxMethod = self.__miniMaxAlphaBeta
         elif mode == "dynamic":
             self.minimaxMethod = self.__miniMaxABDynamic
+
+    def __baseline(self, state: GameState, **kwargs):
+        return state.getBaseline()
 
     def __miniMax(self, state: GameState, depth: int,
                   isMaxPlayer: bool, **kwargs):
@@ -111,8 +116,12 @@ class Agent():
         best_value = float('-inf') if isMaxPlayer else float('inf')
         best_child = None
 
+        if mode == 'baseline':
+            return self.minimaxMethod(state)
+
         for child in state.getChildren():
-            value = self.minimaxMethod(child, depth - 1, not isMaxPlayer,
+            value = self.minimaxMethod(state=child, depth=depth - 1,
+                                       isMaxPlayer=not isMaxPlayer,
                                        alpha=alpha, beta=beta)
 
             if isMaxPlayer:

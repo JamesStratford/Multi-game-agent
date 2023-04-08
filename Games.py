@@ -1,4 +1,6 @@
 from __future__ import annotations
+from random import Random
+import time
 
 
 class GameState():
@@ -7,6 +9,9 @@ class GameState():
         pass
 
     def eval(self) -> float:
+        pass
+
+    def getBaseline(self) -> GameState:
         pass
 
     def isTerminal(self) -> bool:
@@ -32,25 +37,27 @@ class TicTacToe(GameState):
         self.k = nDimensions
         self.move = move
 
+        def generateLines(n):
+            lines = []
+            for i in range(n):
+                # Horizontal lines
+                lines.append([(i, j) for j in range(n)])
+                # Vertical lines
+                lines.append([(j, i) for j in range(n)])
+            # Diagonal lines
+            lines.append([(i, i) for i in range(n)])
+            lines.append([(i, n - i - 1) for i in range(n)])
+            return lines
+        
+        self.lines = generateLines(self.k)
+
     def eval(self) -> float:
         def count(player):
             opponent = "O" if player == "X" else "X"
             playerScore = 0
             opponentScore = 0
 
-            def generateLines(n):
-                lines = []
-                for i in range(n):
-                    # Horizontal lines
-                    lines.append([(i, j) for j in range(n)])
-                    # Vertical lines
-                    lines.append([(j, i) for j in range(n)])
-                # Diagonal lines
-                lines.append([(i, i) for i in range(n)])
-                lines.append([(i, n - i - 1) for i in range(n)])
-                return lines
-
-            for line in generateLines(self.k):
+            for line in self.lines:
                 # Get count of both players per line
                 playerCount = sum([1 for x, y in line
                                    if self.board[x][y] == player])
@@ -75,6 +82,21 @@ class TicTacToe(GameState):
 
             return playerScore - opponentScore
         return count("X") - count("O")
+
+    def getBaseline(self) -> GameState:
+        availableMoves = []
+        for x, rows in enumerate(self.board):
+            for y, col in enumerate(rows):
+                if col == " ":
+                    availableMoves.append((x, y,))
+        x, y = availableMoves[
+            Random((int)(time.time())).randint(0, len(availableMoves)-1)
+            ]
+
+        new_board = [row.copy() for row in self.board]
+        new_board[x][y] = 'X' if self.move == 'O' else 'O'
+
+        return TicTacToe(new_board, new_board[x][y], self.k)
 
     def isTerminal(self) -> bool:
         """Returns True if game is over"""
@@ -106,14 +128,14 @@ class TicTacToe(GameState):
 
         # Board is full (tied)
         return True
-    
+
     def getWinner(self):
         # Check rows
         for row in range(self.k):
             if all(self.board[row][col] == self.board[row][0] and
                    self.board[row][0] != ' ' for col in range(self.k)):
                 return self.board[row][0]
-        
+
         # Check columns
         for col in range(self.k):
             if all(self.board[row][col] == self.board[0][col] and
@@ -127,7 +149,7 @@ class TicTacToe(GameState):
         if all(self.board[i][self.k - i - 1] == self.board[0][self.k - 1] and
                self.board[0][self.k - 1] != ' ' for i in range(self.k)):
             return self.board[0][self.k - 1]
-        
+
         return None
 
     def getChildren(self):
