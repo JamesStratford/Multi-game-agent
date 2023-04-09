@@ -4,7 +4,7 @@ import time
 
 
 class GameState():
-    def __int__(self):
+    def __init__(self):
         self.board = None
         pass
 
@@ -23,10 +23,12 @@ class GameState():
     def getMove(self) -> str:
         pass
 
+    def getMemoization(self) -> str:
+        """Returns a unique string that represents the board"""
+        pass
+
 
 class TicTacToe(GameState):
-    memo = {}
-
     def __init__(self, board=None, move=None, nDimensions: int = 3):
         super().__init__()
         if board is None:
@@ -48,7 +50,7 @@ class TicTacToe(GameState):
             lines.append([(i, i) for i in range(n)])
             lines.append([(i, n - i - 1) for i in range(n)])
             return lines
-        
+
         self.lines = generateLines(self.k)
 
     def eval(self) -> float:
@@ -69,15 +71,15 @@ class TicTacToe(GameState):
                 elif opponentCount == self.k:
                     return -10      # Lose
                 # About to win
-                elif playerCount == self.k - 1 and opponentCount == 0:
-                    playerScore += 3
+                if playerCount == self.k - 1 and opponentCount == 0:
+                    playerScore += 2
                 # Opponent about to win / block them
-                elif opponentCount == self.k - 1 and playerCount == 0:
-                    opponentScore += 3
+                if opponentCount == self.k - 1 and playerCount == 0:
+                    opponentScore += 2
                 # Keep trying to fill the winnable lines
-                elif playerCount >= 1 and opponentCount == 0:
+                if playerCount >= 1 and opponentCount == 0:
                     playerScore += 1
-                elif opponentCount >= 1 and playerCount == 0:
+                if opponentCount >= 1 and playerCount == 0:
                     opponentScore += 1
 
             return playerScore - opponentScore
@@ -91,7 +93,7 @@ class TicTacToe(GameState):
                     availableMoves.append((x, y,))
         x, y = availableMoves[
             Random((int)(time.time())).randint(0, len(availableMoves)-1)
-            ]
+        ]
 
         new_board = [row.copy() for row in self.board]
         new_board[x][y] = 'X' if self.move == 'O' else 'O'
@@ -158,12 +160,67 @@ class TicTacToe(GameState):
             for col in range(self.k):
                 if self.board[row][col] == ' ':
                     new_board = [row.copy() for row in self.board]
-                    # self.move = 'X' if self.move == 'O' else 'O'
                     new_board[row][col] = 'X' if self.move == 'O' else 'O'
-
                     children.append(TicTacToe(new_board, new_board[row][col],
                                               self.k))
         return children
 
     def getMove(self):
         return self.move
+
+    def getMemoization(self) -> str:
+        return str([j for sub in self.board for j in sub])
+
+
+class Nim(GameState):
+    def __init__(self, board=None, move=None, nDimensions: int = 3):
+        super().__init__()
+        if board is None:
+            val = 1
+            self.board = [val + _ * 2 for _ in range(nDimensions)]
+        else:
+            self.board = board
+        self.k = nDimensions
+        self.move = move
+
+    def eval(self) -> float:
+        nimSum = 0
+        for pile in self.board:
+            nimSum ^= pile
+        return nimSum
+
+    def getBaseline(self) -> Nim:
+        availableMoves = []
+        for x, pile in enumerate(self.board):
+            if pile > 0:
+                availableMoves.append((x, pile,))
+        x, maxPile = availableMoves[
+            Random((int)(time.time())).randint(0, len(availableMoves)-1)
+        ]
+
+        new_board = self.board.copy()
+        new_board[x] = maxPile - Random((int)(time.time())).randint(1, maxPile)
+
+        return Nim(new_board, new_board[x], self.k)
+
+    def isTerminal(self) -> bool:
+        return all(pile == 0 for pile in self.board)
+
+    def getChildren(self) -> list[int]:
+        children = []
+        for i, pile in enumerate(self.board):
+            if pile > 0:
+                # Must take a minimum of 1 stick
+                for j in range(1, pile + 1):
+                    new_board = self.board.copy()
+                    new_board[i] -= j
+                    children.append(Nim(new_board,
+                                        new_board[i],
+                                        self.k))
+        return children
+    
+    def getMove(self):
+        return self.move
+
+    def getMemoization(self) -> str:
+        return str([_ for _ in self.board])

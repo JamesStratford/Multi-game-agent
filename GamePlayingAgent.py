@@ -2,7 +2,6 @@ from Games import GameState
 
 
 class Agent():
-
     def __init__(self, depth=5):
         self.memo = {}
         self.minimaxMethod = None
@@ -77,9 +76,8 @@ class Agent():
             return state.eval()
 
         # Memoization
-        if str([j for sub in state.board for j in sub]) in self.memo.keys():
-            return self.memo[str([j for sub in state.board
-                             for j in sub])]
+        if state.getMemoization() in self.memo.keys():
+            return self.memo[state.getMemoization()]
 
         alpha = kwargs['alpha']
         beta = kwargs['beta']
@@ -92,8 +90,7 @@ class Agent():
                 if value > beta:
                     break   # beta cut off
                 alpha = max(alpha, value)
-                self.memo[str([j for sub in child.board
-                          for j in sub])] = value
+                self.memo[state.getMemoization()] = value
         else:
             value = float('inf')
             for child in state.getChildren():
@@ -102,8 +99,7 @@ class Agent():
                 if value < alpha:
                     break   # alpha cut off
                 beta = min(beta, value)
-                self.memo[str([j for sub in child.board
-                          for j in sub])] = value
+                self.memo[state.getMemoization()] = value
 
         return value
 
