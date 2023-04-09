@@ -2,7 +2,8 @@ from __future__ import annotations
 import customtkinter as ctk
 from GamePlayingAgent import Agent
 from TicTacToeGUI import TicTacToeGUI
-from Games import TicTacToe
+from NimGUI import NimGUI
+from Games import TicTacToe, Nim
 from multiprocessing import Pool
 
 
@@ -33,7 +34,10 @@ class GameSelectGUI():
                                       .opt1Value.get())
                 self.gameGUI = TicTacToeGUI(self.game, Agent(), Agent())
             elif self.gameOptions.selectedGame.get() == 'Nim':
-                pass
+                self.game = Nim(move='X',
+                                nDimensions=self.gameOptions
+                                .opt1Value.get())
+                self.gameGUI = NimGUI(self.game, Agent(), Agent())
             elif self.gameOptions.selectedGame.get() == 'Tiger and Dogs':
                 pass
             elif self.gameOptions.selectedGame.get() == 'X':
@@ -79,15 +83,8 @@ class GameSelectGUI():
             self.opt1.pack()
 
         def updateOptions(self, text):
-            if self.selectedGame.get() == 'TicTacToe':
-                self.opt1Label.configure(text="Game Size: "
-                                         f"{self.opt1Value.get()}")
-            elif self.selectedGame.get() == 'Nim':
-                pass
-            elif self.selectedGame.get() == 'Tiger and Dogs':
-                pass
-            elif self.selectedGame.get() == 'X':
-                pass
+            self.opt1Label.configure(text="Game Size: "
+                                     f"{self.opt1Value.get()}")
 
     def start(self):
         self.root.mainloop()

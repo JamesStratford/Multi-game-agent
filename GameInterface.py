@@ -59,6 +59,7 @@ class NimDisplay():
                 self.game.board = child.board
 
         self.display()
+        print(self.game.getWinner(), " has won the game!")
 
 
 if __name__ == "__main__":

@@ -2,6 +2,8 @@ from __future__ import annotations
 import customtkinter as ctk
 from Games import GameState
 from GamePlayingAgent import Agent
+import threading
+import time
 
 
 class AIPlayingGUI():
@@ -13,6 +15,7 @@ class AIPlayingGUI():
         self.gameMutex = False
         self.loading = False
         self.slowTime = False
+        self.playerOneMax = True
         self.__initGUI()
 
     def __initGUI(self):
@@ -36,7 +39,7 @@ class AIPlayingGUI():
         self.ai1Frame = ctk.CTkFrame(master=self.buttonPanel)
 
         self.ai1Label = ctk.CTkLabel(master=self.ai1Frame,
-                                     text="AI Player 1")
+                                     text="Player X")
         self.ai1Label.pack()
         options = ['Baseline', 'Minimax', 'Alpha Beta Pruning', 'Dynamic']
         self.ai1SelectedMethod = ctk.StringVar(master=self.ai1Frame,
@@ -70,7 +73,7 @@ class AIPlayingGUI():
         self.ai2Frame = ctk.CTkFrame(master=self.buttonPanel)
 
         self.ai2Label = ctk.CTkLabel(master=self.ai2Frame,
-                                     text="AI Player 2")
+                                     text="Player O")
         self.ai2Label.pack()
         self.ai2SelectedMethod = ctk.StringVar(master=self.ai2Frame,
                                                value="Baseline")
@@ -99,6 +102,25 @@ class AIPlayingGUI():
         self.ai2Frame.pack(pady=10, side='top', anchor='e')
         self.ai2Frame.pack(padx=10, side='right', anchor='e')
 
+        self.startingPlayer = ctk.StringVar(value='X')
+
+        def changeStartingPlayer():
+            if self.gameMutex is False:
+                self.gamestate.move = self.startingPlayer.get()
+
+        self.startMoveAIOne = ctk.CTkRadioButton(master=self.ai1Frame,
+                                                 variable=self.startingPlayer,
+                                                 value='X',
+                                                 text="Starting",
+                                                 command=changeStartingPlayer)
+        self.startMoveAITwo = ctk.CTkRadioButton(master=self.ai2Frame,
+                                                 variable=self.startingPlayer,
+                                                 value='O',
+                                                 text="Starting",
+                                                 command=changeStartingPlayer)
+        self.startMoveAIOne.pack()
+        self.startMoveAITwo.pack()
+
         self.startButton = ctk.CTkButton(master=self.buttonPanel,
                                          text="Start!",
                                          width=80,
@@ -123,8 +145,73 @@ class AIPlayingGUI():
     def display(self):
         pass
 
+    def _play(self):
+        self.gameMutex = True
+
+        def getMode():
+            methods = ['baseline', 'minimax', 'alphabeta', 'dynamic']
+
+            aiOneModeStr = self.ai1SelectedMethod.get()
+            if aiOneModeStr == 'Baseline':
+                aiOneMode = methods[0]
+            elif aiOneModeStr == 'Minimax':
+                aiOneMode = methods[1]
+            elif aiOneModeStr == 'Alpha Beta Pruning':
+                aiOneMode = methods[2]
+            else:
+                aiOneMode = methods[3]
+
+            aiTwoModeStr = self.ai2SelectedMethod.get()
+            if aiTwoModeStr == 'Baseline':
+                aiTwoMode = methods[0]
+            elif aiTwoModeStr == 'Minimax':
+                aiTwoMode = methods[1]
+            elif aiTwoModeStr == 'Alpha Beta Pruning':
+                aiTwoMode = methods[2]
+            else:
+                aiTwoMode = methods[3]
+
+            return (aiOneMode, aiTwoMode,)
+
+        while not self.gamestate.isTerminal():
+            if self.slowTime:
+                if self.gamestate.move == 'X':
+                    self.statusText.configure(text="Loading...\nPlayer X turn")
+                else:
+                    self.statusText.configure(text="Loading...\nPlayer O turn")
+            if self.gamestate.move == 'X':      # AI 1
+                self.gamestate.move = 'O'
+                child = self.aiPlayerOne.bestMove(self.gamestate,
+                                                  self.aiPlayerOne.depth,
+                                                  self.playerOneMax,
+                                                  getMode()[0])
+                self.gamestate.board = child.board
+            else:                               # AI 2
+                self.gamestate.move = 'X'
+                child = self.aiPlayerTwo.bestMove(self.gamestate,
+                                                  self.aiPlayerTwo.depth,
+                                                  not self.playerOneMax,
+                                                  getMode()[1])
+                self.gamestate.board = child.board
+            self.display()
+            if self.slowTime:
+                time.sleep(1)
+
+        self.display()
+        self.gameMutex = False
+        winner = self.gamestate.getWinner()
+        text = "Tie!"
+        if winner is not None:
+            text = f"{winner} has won!"
+        self.statusText.configure(text=text)
+
     def play(self):
-        pass
+        if self.gameMutex is False:
+            t = threading.Thread(target=self._play)
+            t.daemon = True
+            t.start()
+            self.loading = True
+            self.statusText.configure(text="Loading...")
 
     def reset(self):
         pass
@@ -134,4 +221,3 @@ class AIPlayingGUI():
 
     def stop(self):
         self.root.quit()
-

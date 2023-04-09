@@ -17,6 +17,9 @@ class GameState():
     def isTerminal(self) -> bool:
         pass
 
+    def getWinner(self) -> str:
+        pass
+
     def getChildren(self) -> list[GameState]:
         pass
 
@@ -205,6 +208,12 @@ class Nim(GameState):
 
     def isTerminal(self) -> bool:
         return all(pile == 0 for pile in self.board)
+
+    def getWinner(self) -> str:
+        if self.isTerminal():
+            return self.getMove()
+        else:
+            return None
 
     def getChildren(self) -> list[int]:
         children = []
