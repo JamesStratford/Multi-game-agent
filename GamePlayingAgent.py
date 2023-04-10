@@ -1,8 +1,28 @@
 from Games import GameState
 
 
-class Agent():
+class Player():
+    def __init__(self) -> None:
+        pass
+
+    def getNextMove(self, **kwargs):
+        pass
+
+
+class Human(Player):
+    def __init__(self) -> None:
+        super().__init__()
+        self.turn = False
+
+    def getNextMove(self, state: GameState, **kwargs):
+        while self.turn is True:
+            pass
+        return state
+
+
+class Agent(Player):
     def __init__(self, depth=5):
+        super().__init__()
         self.memo = {}
         self.minimaxMethod = None
         self.depth = depth
@@ -22,7 +42,7 @@ class Agent():
         elif mode == "dynamic":
             self.minimaxMethod = self.__miniMaxABDynamic
 
-    def __baseline(self, state: GameState, **kwargs):
+    def __baseline(self, state: GameState, **kwargs) -> GameState:
         return state.getBaseline()
 
     def __miniMax(self, state: GameState, depth: int,
@@ -103,8 +123,8 @@ class Agent():
 
         return value
 
-    def bestMove(self, state: GameState, depth, isMaxPlayer,
-                 mode: str = "dynamic"):
+    def getNextMove(self, state: GameState, depth, isMaxPlayer,
+                    mode: str = "dynamic"):
         self.setMinimax(mode)
 
         alpha = float('-inf')

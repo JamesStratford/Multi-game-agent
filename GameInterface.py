@@ -19,12 +19,18 @@ class TicTacToeDisplay():
             if self.game.move == 'X':   # AI 1
                 self.display()
                 self.game.move = 'O'
-                child = self.aiPlayer.bestMove(self.game, 2, True, 'dynamic')
+                child = self.aiPlayer.getNextMove(state=self.game,
+                                                  depth=3,
+                                                  isMaxPlayer=True,
+                                                  mode='dynamic')
                 self.game.board = child.board
             else:                       # AI 2
                 self.display()
                 self.game.move = 'X'
-                child = self.aiPlayer2.bestMove(self.game, 5, False, 'dynamic')
+                child = self.aiPlayer2.getNextMove(state=self.game,
+                                                   depth=3,
+                                                   isMaxPlayer=False,
+                                                   mode='dynamic')
                 self.game.board = child.board
 
         self.display()
@@ -50,12 +56,18 @@ class NimDisplay():
             if self.game.move == 'X':   # AI 1
                 self.display()
                 self.game.move = 'O'
-                child = self.aiPlayer.bestMove(self.game, 3, False, 'dynamic')
+                child = self.aiPlayer.getNextMove(state=self.game,
+                                                  depth=3,
+                                                  isMaxPlayer=False,
+                                                  mode='dynamic')
                 self.game.board = child.board
             else:                       # AI 2
                 self.display()
                 self.game.move = 'X'
-                child = self.aiPlayer2.bestMove(self.game, 3, True, 'dynamic')
+                child = self.aiPlayer2.getNextMove(state=self.game,
+                                                   depth=3,
+                                                   isMaxPlayer=True,
+                                                   mode='dynamic')
                 self.game.board = child.board
 
         self.display()

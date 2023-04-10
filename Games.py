@@ -227,7 +227,7 @@ class Nim(GameState):
                                         new_board[i],
                                         self.k))
         return children
-    
+
     def getMove(self):
         return self.move
 

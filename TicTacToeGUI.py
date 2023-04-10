@@ -3,7 +3,7 @@ from __future__ import annotations
 import customtkinter as ctk
 from GameGUI import AIPlayingGUI
 from Games import TicTacToe
-from GamePlayingAgent import Agent
+from GamePlayingAgent import Player, Human
 
 
 class TicTacToeGUI(AIPlayingGUI):
@@ -12,10 +12,10 @@ class TicTacToeGUI(AIPlayingGUI):
     https://devdojo.com/jothin-kumar/tic-tac-toe-with-python-tkinter-part-1
     """
 
-    def __init__(self, gamestate: TicTacToe = None, aiPlayerOne: Agent = None,
-                 aiPlayerTwo: Agent = None):
-        super().__init__(gamestate=gamestate, aiPlayerOne=aiPlayerOne,
-                         aiPlayerTwo=aiPlayerTwo)
+    def __init__(self, gamestate: TicTacToe = None, playerOne: Player = None,
+                 playerTwo: Player = None):
+        super().__init__(gamestate=gamestate, playerOne=playerOne,
+                         playerTwo=playerTwo)
         self.play_area = ctk.CTkFrame(self.frame, width=self.windowWidth/2,
                                       height=self.windowHeight/2)
         self.XO_points: list[list[self.XOPoint]] = []
@@ -26,11 +26,31 @@ class TicTacToeGUI(AIPlayingGUI):
             self.x = x
             self.y = y
             buttonSz = (5 * 100) / gui.k
-            self.button = ctk.CTkButton(gui.play_area,
-                                        text="",
-                                        width=buttonSz,
-                                        height=buttonSz,
-                                        font=ctk.CTkFont(size=int(buttonSz/2)))
+
+            def tileClicked():
+                """Human player handler"""
+                move = "X" if gui.gamestate.move == "X" else "O"
+                if gui.gamestate.board[self.x][self.y] == " ":
+                    if move == "X" and type(gui.playerOne) == Human:
+                        gui.playerOne.turn = False
+                        gui.gamestate.move = "O"
+                        newBoard = gui.gamestate.board.copy()
+                        newBoard[self.x][self.y] = "X"
+                        gui.gamestate.board = newBoard
+                    elif move == "O" and type(gui.playerTwo) == Human:
+                        gui.playerTwo.turn = False
+                        gui.gamestate.move = "X"
+                        newBoard = gui.gamestate.board.copy()
+                        newBoard[self.x][self.y] = "O"
+                        gui.gamestate.board = newBoard
+
+            self.button = ctk.CTkButton(
+                gui.play_area,
+                text="",
+                width=buttonSz,
+                height=buttonSz,
+                font=ctk.CTkFont(size=int(buttonSz/2)),
+                command=tileClicked)
             self.button.grid(row=x, column=y, pady=2, padx=2)
 
         def set(self, char):

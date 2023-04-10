@@ -1,6 +1,6 @@
 from __future__ import annotations
 import customtkinter as ctk
-from GamePlayingAgent import Agent
+from GamePlayingAgent import Agent, Human
 from TicTacToeGUI import TicTacToeGUI
 from NimGUI import NimGUI
 from Games import TicTacToe, Nim
@@ -28,16 +28,28 @@ class GameSelectGUI():
         self.gameOptions = self.GameOptions(self.frame)
 
         def startGame():
+
+            if self.gameOptions.playerOneValue.get() == "AI":
+                playerOneAI = Agent()
+            else:
+                playerOneAI = Human()
+
+            if self.gameOptions.playerTwoValue.get() == "AI":
+                playerTwoAI = Agent()
+            else:
+                playerTwoAI = Human()
+
             if self.gameOptions.selectedGame.get() == 'TicTacToe':
                 self.game = TicTacToe(move='X',
                                       nDimensions=self.gameOptions
                                       .opt1Value.get())
-                self.gameGUI = TicTacToeGUI(self.game, Agent(), Agent())
+                self.gameGUI = TicTacToeGUI(
+                    self.game, playerOneAI, playerTwoAI)
             elif self.gameOptions.selectedGame.get() == 'Nim':
                 self.game = Nim(move='X',
                                 nDimensions=self.gameOptions
                                 .opt1Value.get())
-                self.gameGUI = NimGUI(self.game, Agent(), Agent())
+                self.gameGUI = NimGUI(self.game, playerOneAI, playerTwoAI)
             elif self.gameOptions.selectedGame.get() == 'Tiger and Dogs':
                 pass
             elif self.gameOptions.selectedGame.get() == 'X':
@@ -56,7 +68,9 @@ class GameSelectGUI():
 
     class GameOptions():
         def __init__(self, master):
-            self.frame = ctk.CTkFrame(master=master)
+            self.frame = ctk.CTkFrame(master=master,
+                                      width=300,
+                                      height=300)
             self.frame.pack()
             self.selectedGame = ctk.StringVar(master=self.frame,
                                               value='TicTacToe')
@@ -81,6 +95,24 @@ class GameSelectGUI():
             self.gameComboBox.pack()
             self.opt1Label.pack()
             self.opt1.pack()
+
+            self.playerOptFrame = ctk.CTkFrame(master=self.frame)
+            playerOptions = ["AI", "Human"]
+            self.playerOneValue = ctk.StringVar(master=self.frame,
+                                                value="AI")
+            self.playerOneCombo = ctk.CTkComboBox(master=self.playerOptFrame,
+                                                  values=playerOptions,
+                                                  variable=self.playerOneValue,
+                                                  width=100)
+            self.playerTwoValue = ctk.StringVar(master=self.frame,
+                                                value="AI")
+            self.playerTwoCombo = ctk.CTkComboBox(master=self.playerOptFrame,
+                                                  values=playerOptions,
+                                                  variable=self.playerTwoValue,
+                                                  width=100)
+            self.playerOptFrame.pack()
+            self.playerOneCombo.grid(row=0, column=0, padx=2, pady=2)
+            self.playerTwoCombo.grid(row=0, column=1, padx=2, pady=2)
 
         def updateOptions(self, text):
             self.opt1Label.configure(text="Game Size: "

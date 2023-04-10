@@ -8,8 +8,8 @@ from GamePlayingAgent import Agent
 class NimGUI(AIPlayingGUI):
     def __init__(self, gamestate: Nim = None, aiPlayerOne: Agent = None,
                  aiPlayerTwo: Agent = None):
-        super().__init__(gamestate=gamestate, aiPlayerOne=aiPlayerOne,
-                         aiPlayerTwo=aiPlayerTwo)
+        super().__init__(gamestate=gamestate, playerOne=aiPlayerOne,
+                         playerTwo=aiPlayerTwo)
         self.play_area = ctk.CTkFrame(self.frame,
                                       width=self.windowWidth/2,
                                       height=self.windowHeight/2)

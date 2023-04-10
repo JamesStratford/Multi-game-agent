@@ -1,17 +1,17 @@
 from __future__ import annotations
 import customtkinter as ctk
 from Games import GameState
-from GamePlayingAgent import Agent
+from GamePlayingAgent import Player, Agent, Human
 import threading
 import time
 
 
 class AIPlayingGUI():
-    def __init__(self, gamestate: GameState = None, aiPlayerOne: Agent = None,
-                 aiPlayerTwo: Agent = None):
+    def __init__(self, gamestate: GameState = None, playerOne: Player = None,
+                 playerTwo: Player = None):
         self.gamestate = gamestate
-        self.aiPlayerOne = aiPlayerOne
-        self.aiPlayerTwo = aiPlayerTwo
+        self.playerOne = playerOne
+        self.playerTwo = playerTwo
         self.gameMutex = False
         self.loading = False
         self.slowTime = False
@@ -52,7 +52,7 @@ class AIPlayingGUI():
         self.ai1MethodCombo.pack()
 
         def setAIOneDepth(slider):
-            self.aiPlayerOne.depth = int(slider)
+            self.playerOne.depth = int(slider)
             self.ai1DepthLabel.configure(text="Depth: = "
                                          f"{int(slider)}")
 
@@ -85,7 +85,7 @@ class AIPlayingGUI():
         self.ai2MethodCombo.pack()
 
         def setAITwoDepth(slider):
-            self.aiPlayerTwo.depth = int(slider)
+            self.playerTwo.depth = int(slider)
             self.ai2DepthLabel.configure(text="Depth: = "
                                          f"{int(slider)}")
 
@@ -142,6 +142,9 @@ class AIPlayingGUI():
                                                 command=slowTime)
         self.slowTimeCheckBox.pack()
 
+    def hasHumanPlayer(self):
+        return type(self.playerOne) == Human or type(self.playerTwo) == Human
+
     def display(self):
         pass
 
@@ -173,25 +176,67 @@ class AIPlayingGUI():
 
             return (aiOneMode, aiTwoMode,)
 
+        def playersTurn(player: str):
+            def threadResult(result: dict, player: str):
+                """
+                Acquire move via threading to prevent lagging GUI.
+                Unfortunately Python doesn't have true threading so
+                it still lags. But at least the GUI is responsive
+                """
+                result['result'] = self.playerOne.getNextMove(
+                    state=self.gamestate,
+                    depth=self.playerOne.depth,
+                    isMaxPlayer=self.playerOneMax,
+                    mode=getMode()[0 if player == "X" else 1]
+                )
+            result = {'result': None}
+            
+            child = self.gamestate
+
+            if player == "X" and type(self.playerOne) == Agent:
+                self.gamestate.move = 'O'
+
+                t = threading.Thread(
+                    target=threadResult,
+                    args=[result, player]
+                )
+                t.start()
+                t.join()
+
+                child = result['result']
+            elif player == "O" and type(self.playerTwo) == Agent:
+                self.gamestate.move = 'X'
+
+                t = threading.Thread(
+                    target=threadResult,
+                    args=[result, player]
+                )
+                t.start()
+                t.join()
+
+                child = result['result']
+            else:
+                # Human player handler. Refer to descendant game GUI class
+                # for way to handle
+                if player == "X":
+                    self.playerOne.turn = True
+                elif player == "O":
+                    self.playerTwo.turn = True
+                time.sleep(0.5)
+
+            return child
+
         while not self.gamestate.isTerminal():
-            if self.slowTime:
+            if self.slowTime or self.hasHumanPlayer():
                 if self.gamestate.move == 'X':
                     self.statusText.configure(text="Loading...\nPlayer X turn")
                 else:
                     self.statusText.configure(text="Loading...\nPlayer O turn")
             if self.gamestate.move == 'X':      # AI 1
-                self.gamestate.move = 'O'
-                child = self.aiPlayerOne.bestMove(self.gamestate,
-                                                  self.aiPlayerOne.depth,
-                                                  self.playerOneMax,
-                                                  getMode()[0])
+                child = playersTurn("X")
                 self.gamestate.board = child.board
             else:                               # AI 2
-                self.gamestate.move = 'X'
-                child = self.aiPlayerTwo.bestMove(self.gamestate,
-                                                  self.aiPlayerTwo.depth,
-                                                  not self.playerOneMax,
-                                                  getMode()[1])
+                child = playersTurn("O")
                 self.gamestate.board = child.board
             self.display()
             if self.slowTime:
