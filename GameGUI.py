@@ -7,12 +7,15 @@ import time
 
 
 class AIPlayingGUI():
+    event = threading.Event()
+
     def __init__(self, gamestate: GameState = None, playerOne: Player = None,
                  playerTwo: Player = None):
         self.gamestate = gamestate
         self.playerOne = playerOne
         self.playerTwo = playerTwo
         self.gameMutex = False
+
         self.loading = False
         self.slowTime = False
         self.playerOneMax = True
@@ -214,7 +217,6 @@ class AIPlayingGUI():
                 Unfortunately Python doesn't have true threading so
                 it still lags. But at least the GUI is responsive
                 """
-
                 # This was the weirdest bit of code I have written
                 result['result'] = \
                     self.playerOne.getNextMove(
@@ -234,7 +236,7 @@ class AIPlayingGUI():
 
             if self.gamestate.isTerminal():
                 return self.gamestate
-            
+
             if player == "X" and type(self.playerOne) == Agent:
                 self.gamestate.move = 'O'
 
@@ -244,6 +246,7 @@ class AIPlayingGUI():
                 )
                 t.start()
                 t.join()
+                AIPlayingGUI.event.clear()
 
                 child = result['result']
             elif player == "O" and type(self.playerTwo) == Agent:
@@ -255,6 +258,7 @@ class AIPlayingGUI():
                 )
                 t.start()
                 t.join()
+                AIPlayingGUI.event.clear()
 
                 child = result['result']
             elif type(self.playerOne) == Human or \
@@ -270,8 +274,6 @@ class AIPlayingGUI():
             return child
 
         while not self.gamestate.isTerminal():
-            self.display()
-
             if self.slowTime or self.hasHumanPlayer():
                 if self.gamestate.move == 'X':
                     self.statusText.configure(text="Loading...\nPlayer X turn")
@@ -279,11 +281,24 @@ class AIPlayingGUI():
                     self.statusText.configure(text="Loading...\nPlayer O turn")
 
             if self.gamestate.move == 'X':      # AI 1
-                child = playersTurn("X")
+                if type(self.playerOne) == Human:
+                    AIPlayingGUI.event.set()
+                    child = playersTurn("X")
+                    AIPlayingGUI.event.wait()
+                else:
+                    child = playersTurn("X")
                 self.gamestate.board = child.board
             else:                               # AI 2
-                child = playersTurn("O")
+                if type(self.playerTwo) == Human:
+                    AIPlayingGUI.event.set()
+                    child = playersTurn("O")
+                    AIPlayingGUI.event.wait()
+                else:
+                    child = playersTurn("O")
                 self.gamestate.board = child.board
+
+            self.display()
+
             if self.slowTime:
                 time.sleep(1)
 

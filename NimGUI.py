@@ -24,7 +24,6 @@ class NimGUI(AIPlayingGUI):
 
             def tileClicked():
                 """Human player handler"""
-
                 move = "X" if gui.gamestate.move == "X" else "O"
                 if gui.gamestate.board[self.x] > 0:
                     if move == "X" and type(gui.playerOne) == Human:
@@ -47,6 +46,8 @@ class NimGUI(AIPlayingGUI):
                                 - int(gui.playerTwoNumToRemove.get()), 0
                             )
                             gui.gamestate.board = newBoard
+                    gui.display()
+                AIPlayingGUI.event.clear()
 
             self.button = ctk.CTkButton(gui.play_area,
                                         text="",

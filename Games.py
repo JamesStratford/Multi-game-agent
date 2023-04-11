@@ -5,6 +5,7 @@ import random
 class GameState():
     def __init__(self):
         self.board = None
+        self.gameOver = False
         pass
 
     def eval(self) -> float:
@@ -17,7 +18,7 @@ class GameState():
 
     def isTerminal(self) -> bool:
         """Checks if the game is over"""
-        pass
+        return self.gameOver
 
     def getWinner(self) -> str:
         """Returns the winner of the game"""
@@ -34,6 +35,11 @@ class GameState():
     def getMemoization(self, isMax: bool) -> str:
         """Returns a unique string that represents the board"""
         pass
+
+    def endGame(self):
+        """Forces game over"""
+        self.gameOver = True
+        return self.gameOver
 
 
 class TicTacToe(GameState):
@@ -102,6 +108,8 @@ class TicTacToe(GameState):
 
     def isTerminal(self) -> bool:
         """Returns True if game is over"""
+        if super().isTerminal():
+            return True
 
         for row in range(self.k):
             if all(self.board[row][col] == self.board[row][0] and
@@ -204,6 +212,9 @@ class Nim(GameState):
         return TicTacToe(new_board, move.getMove(), self.k)
 
     def isTerminal(self) -> bool:
+        if super().isTerminal():
+            return True
+        
         return all(pile == 0 for pile in self.board)
 
     def getWinner(self) -> str:
@@ -259,7 +270,7 @@ class TigerAndDogs(GameState):
         for row in range(self.k):
             for col in range(self.k):
                 if self.board[row][col] == "X":
-                    moves = self.__getMoves(self.board, row, col, "X")
+                    moves = self.getAvailableMoves(self.board, row, col)
                     if len(moves) == 0:
                         return True
         return False
@@ -356,6 +367,9 @@ class TigerAndDogs(GameState):
         return livingTigers
 
     def isTerminal(self) -> bool:
+        if super().isTerminal():
+            return True
+        
         # Dogs lose
         livingDogs = self.__getLivingDogs()
         if livingDogs <= self.k*3+1 - 6:  # 6 dead dogs
@@ -371,7 +385,7 @@ class TigerAndDogs(GameState):
         else:
             return None
 
-    def __getMoves(self, board, x, y, currMove) -> list[tuple[int]]:
+    def getAvailableMoves(self, board, x, y) -> list[tuple[int]]:
         moves = []
         # piece = board[x][y]
         # if piece == "T":
@@ -451,61 +465,61 @@ class TigerAndDogs(GameState):
 
         return (line, correspondingPositions,)
 
+    def tigerKillDogs(self, board, toMove: tuple):
+        def killDogs(linePos):
+            dogsKilled = 0
+            line, pos = linePos
+            for i in range(1, len(line) - 1):
+                if line[i] == "X" \
+                        and (line[i - 1], line[i + 1]) == ("O", "O"):
+                    board[pos[i-1][0]][pos[i-1][1]] = " "
+                    board[pos[i+1][0]][pos[i+1][1]] = " "
+                    dogsKilled = 2
+                    self.dogsKilled += 2
+                    break
+            return dogsKilled
+
+        deadDogs = 0
+        x, y = toMove
+        for x_ in range(-1, 2):
+            for y_ in range(-1, 2):
+                if x+x_ >= self.k:
+                    __x = self.k-1
+                elif x+x_ < 0:
+                    __x = 0
+                else:
+                    __x = x+x_
+
+                if y+y_ >= self.k:
+                    __y = self.k-1
+                elif y+y_ < 0:
+                    __y = 0
+                else:
+                    __y = y+y_
+
+                if board[__x][__y] == "O":
+                    linePos = self.__getLine(board, toMove, (__x, __y,))
+                    line, pos = linePos
+                    if not any(line[i] == line[i + 1] == "O" for i in
+                               range(len(line) - 1)):
+                        if sum(1 for x in line if x == "O") > 1:
+                            deadDogs = killDogs(linePos)
+        return (board, deadDogs,)
+
     def getChildren(self):
-        def tigerKillDogs(board, toMove: tuple):
-            def killDogs(linePos):
-                dogsKilled = 0
-                line, pos = linePos
-                for i in range(1, len(line) - 1):
-                    if line[i] == "X" \
-                       and (line[i - 1], line[i + 1]) == ("O", "O"):
-                        board[pos[i-1][0]][pos[i-1][1]] = " "
-                        board[pos[i+1][0]][pos[i+1][1]] = " "
-                        dogsKilled = 2
-                        self.dogsKilled += 2
-                        break
-                return dogsKilled
-
-            deadDogs = 0
-            x, y = toMove
-            for x_ in range(-1, 2):
-                for y_ in range(-1, 2):
-                    if x+x_ >= self.k:
-                        __x = self.k-1
-                    elif x+x_ < 0:
-                        __x = 0
-                    else:
-                        __x = x+x_
-
-                    if y+y_ >= self.k:
-                        __y = self.k-1
-                    elif y+y_ < 0:
-                        __y = 0
-                    else:
-                        __y = y+y_
-
-                    if board[__x][__y] == "O":
-                        linePos = self.__getLine(board, toMove, (__x, __y,))
-                        line, pos = linePos
-                        if not any(line[i] == line[i + 1] == "O" for i in
-                                   range(len(line) - 1)):
-                            if sum(1 for x in line if x == "O") > 1:
-                                deadDogs = killDogs(linePos)
-            return (board, deadDogs,)
-
         children = []
         for row in range(self.k):
             for col in range(self.k):
                 currMove = "O" if self.move == "X" else "X"
                 if self.board[row][col] == currMove:
-                    for move in self.__getMoves(
-                        self.board, row, col, currMove
+                    for move in self.getAvailableMoves(
+                        self.board, row, col
                     ):
                         new_board = [row.copy() for row in self.board]
                         new_board[row][col] = " "
                         new_board[move[0]][move[1]] = currMove
                         if currMove == "X":
-                            deadDogs = tigerKillDogs(
+                            deadDogs = self.tigerKillDogs(
                                 new_board, move)
                             new_board = [row.copy() for row in deadDogs[0]]
                             children.append(

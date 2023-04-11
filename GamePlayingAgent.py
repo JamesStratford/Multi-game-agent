@@ -123,7 +123,12 @@ class Agent(Player):
                     value = self.memo[child.getMemoization(not isMaxPlayer)]
                 else:
                     value = min(value, self.__miniMaxABDynamic(
-                        child, depth - 1, isMaxPlayer, alpha=alpha, beta=beta))
+                        child,
+                        depth - 1,
+                        isMaxPlayer,
+                        alpha=alpha,
+                        beta=beta)
+                    )
                     if value < alpha:
                         break   # alpha cut off
                     beta = min(beta, value)

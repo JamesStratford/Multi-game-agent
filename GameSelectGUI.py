@@ -3,6 +3,7 @@ import customtkinter as ctk
 from GamePlayingAgent import Agent, Human
 from TicTacToeGUI import TicTacToeGUI
 from NimGUI import NimGUI
+from TigerAndDogsGUI import TigerAndDogsGUI
 from Games import TicTacToe, Nim, TigerAndDogs
 from multiprocessing import Pool
 
@@ -57,7 +58,7 @@ class GameSelectGUI():
                     move='X',
                     nDimensions=self.gameOptions
                     .opt1Value.get())
-                self.gameGUI = TigerAndDogs(
+                self.gameGUI = TigerAndDogsGUI(
                     self.game, playerOneAI, playerTwoAI)
             elif self.gameOptions.selectedGame.get() == 'X':
                 pass

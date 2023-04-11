@@ -28,8 +28,9 @@ class TicTacToeGUI(AIPlayingGUI):
             buttonSz = (5 * 100) / gui.k
 
             def tileClicked():
-                """Human player handler"""
+                """Human player handler"""                
                 move = "X" if gui.gamestate.move == "X" else "O"
+
                 if gui.gamestate.board[self.x][self.y] == " ":
                     if move == "X" and type(gui.playerOne) == Human:
                         gui.playerOne.turn = False
@@ -43,6 +44,9 @@ class TicTacToeGUI(AIPlayingGUI):
                         newBoard = gui.gamestate.board.copy()
                         newBoard[self.x][self.y] = "O"
                         gui.gamestate.board = newBoard
+
+                    gui.display()
+                AIPlayingGUI.event.clear()
 
             self.button = ctk.CTkButton(
                 gui.play_area,

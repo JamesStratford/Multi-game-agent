@@ -1,6 +1,5 @@
 from Games import TicTacToe, Nim, TigerAndDogs
 from GamePlayingAgent import Agent
-import time
 
 
 class TicTacToeDisplay():
