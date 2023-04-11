@@ -3,7 +3,7 @@ import customtkinter as ctk
 from GamePlayingAgent import Agent, Human
 from TicTacToeGUI import TicTacToeGUI
 from NimGUI import NimGUI
-from Games import TicTacToe, Nim
+from Games import TicTacToe, Nim, TigerAndDogs
 from multiprocessing import Pool
 
 
@@ -30,28 +30,35 @@ class GameSelectGUI():
         def startGame():
 
             if self.gameOptions.playerOneValue.get() == "AI":
-                playerOneAI = Agent()
+                playerOneAI = Agent(maxPlayer=True)
             else:
                 playerOneAI = Human()
 
             if self.gameOptions.playerTwoValue.get() == "AI":
-                playerTwoAI = Agent()
+                playerTwoAI = Agent(maxPlayer=False)
             else:
                 playerTwoAI = Human()
 
             if self.gameOptions.selectedGame.get() == 'TicTacToe':
-                self.game = TicTacToe(move='X',
-                                      nDimensions=self.gameOptions
-                                      .opt1Value.get())
+                self.game = TicTacToe(
+                    move='X',
+                    nDimensions=self.gameOptions
+                    .opt1Value.get())
                 self.gameGUI = TicTacToeGUI(
                     self.game, playerOneAI, playerTwoAI)
             elif self.gameOptions.selectedGame.get() == 'Nim':
-                self.game = Nim(move='X',
-                                nDimensions=self.gameOptions
-                                .opt1Value.get())
+                self.game = Nim(
+                    move='X',
+                    nDimensions=self.gameOptions
+                    .opt1Value.get())
                 self.gameGUI = NimGUI(self.game, playerOneAI, playerTwoAI)
             elif self.gameOptions.selectedGame.get() == 'Tiger and Dogs':
-                pass
+                self.game = TigerAndDogs(
+                    move='X',
+                    nDimensions=self.gameOptions
+                    .opt1Value.get())
+                self.gameGUI = TigerAndDogs(
+                    self.game, playerOneAI, playerTwoAI)
             elif self.gameOptions.selectedGame.get() == 'X':
                 pass
 

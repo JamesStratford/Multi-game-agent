@@ -36,102 +36,126 @@ class AIPlayingGUI():
                                        text="")
         self.statusText.pack(anchor='n')
 
-        self.ai1Frame = ctk.CTkFrame(master=self.buttonPanel)
+        self.playerOneFrame = ctk.CTkFrame(master=self.buttonPanel,
+                                           width=200,
+                                           height=200)
 
-        self.ai1Label = ctk.CTkLabel(master=self.ai1Frame,
-                                     text="Player X")
-        self.ai1Label.pack()
+        self.playerOneLabel = ctk.CTkLabel(master=self.playerOneFrame,
+                                           text="Player X",
+                                           width=200)
+        self.playerOneLabel.pack()
         options = ['Baseline', 'Minimax', 'Alpha Beta Pruning', 'Dynamic']
-        self.ai1SelectedMethod = ctk.StringVar(master=self.ai1Frame,
-                                               value="Baseline")
-        self.ai1MethodCombo = ctk.CTkComboBox(master=self.ai1Frame,
-                                              values=options,
-                                              width=200,
-                                              variable=self.ai1SelectedMethod,
-                                              state="readonly")
-        self.ai1MethodCombo.pack()
+        if type(self.playerOne) == Agent:
+            self.ai1SelectedMethod = ctk.StringVar(master=self.playerOneFrame,
+                                                   value="Baseline")
+            self.ai1MethodCombo = ctk.CTkComboBox(
+                master=self.playerOneFrame,
+                values=options,
+                width=200,
+                variable=self.ai1SelectedMethod,
+                state="readonly")
+            self.ai1MethodCombo.pack()
 
-        def setAIOneDepth(slider):
-            self.playerOne.depth = int(slider)
-            self.ai1DepthLabel.configure(text="Depth: = "
-                                         f"{int(slider)}")
+            def setAIOneDepth(slider):
+                self.playerOne.depth = int(slider)
+                self.ai1DepthLabel.configure(text="Depth: = "
+                                             f"{int(slider)}")
 
-        self.ai1DepthSlider = ctk.CTkSlider(master=self.ai1Frame,
-                                            from_=1,
-                                            to=10,
-                                            number_of_steps=9,
-                                            command=setAIOneDepth)
-        self.ai1DepthLabel = ctk.CTkLabel(master=self.ai1Frame,
-                                          text="Depth: = "
-                                          f"{int(self.ai1DepthSlider.get())}")
-        self.ai1DepthSlider.pack()
-        self.ai1DepthLabel.pack()
+            self.ai1DepthSlider = ctk.CTkSlider(
+                master=self.playerOneFrame,
+                from_=1,
+                to=10,
+                number_of_steps=9,
+                command=setAIOneDepth)
+            self.ai1DepthLabel = ctk.CTkLabel(
+                master=self.playerOneFrame,
+                text="Depth: = "
+                f"{int(self.ai1DepthSlider.get())}")
+            self.ai1DepthSlider.pack()
+            self.ai1DepthLabel.pack()
 
-        self.ai1Frame.pack(pady=10, side='top', anchor='w')
-        self.ai1Frame.pack(padx=10, side='left', anchor='w')
+        self.playerOneFrame.pack(pady=10, side='top', anchor='w')
+        self.playerOneFrame.pack(padx=10, side='left', anchor='w')
 
-        self.ai2Frame = ctk.CTkFrame(master=self.buttonPanel)
+        self.playerTwoFrame = ctk.CTkFrame(master=self.buttonPanel,
+                                           width=200,
+                                           height=200)
 
-        self.ai2Label = ctk.CTkLabel(master=self.ai2Frame,
-                                     text="Player O")
-        self.ai2Label.pack()
-        self.ai2SelectedMethod = ctk.StringVar(master=self.ai2Frame,
-                                               value="Baseline")
-        self.ai2MethodCombo = ctk.CTkComboBox(master=self.ai2Frame,
-                                              values=options,
-                                              width=200,
-                                              variable=self.ai2SelectedMethod,
-                                              state="readonly")
-        self.ai2MethodCombo.pack()
+        self.playerTwoLabel = ctk.CTkLabel(master=self.playerTwoFrame,
+                                           text="Player O",
+                                           width=200)
+        self.playerTwoLabel.pack()
 
-        def setAITwoDepth(slider):
-            self.playerTwo.depth = int(slider)
-            self.ai2DepthLabel.configure(text="Depth: = "
-                                         f"{int(slider)}")
+        if type(self.playerTwo) == Agent:
+            self.ai2SelectedMethod = ctk.StringVar(
+                master=self.playerTwoFrame,
+                value="Baseline")
+            self.ai2MethodCombo = ctk.CTkComboBox(
+                master=self.playerTwoFrame,
+                values=options,
+                width=200,
+                variable=self.ai2SelectedMethod,
+                state="readonly")
+            self.ai2MethodCombo.pack()
 
-        self.ai2DepthSlider = ctk.CTkSlider(master=self.ai2Frame,
-                                            from_=1,
-                                            to=10,
-                                            number_of_steps=9,
-                                            command=setAITwoDepth)
-        self.ai2DepthLabel = ctk.CTkLabel(master=self.ai2Frame,
-                                          text="Depth: = "
-                                          f"{int(self.ai2DepthSlider.get())}")
-        self.ai2DepthSlider.pack()
-        self.ai2DepthLabel.pack()
-        self.ai2Frame.pack(pady=10, side='top', anchor='e')
-        self.ai2Frame.pack(padx=10, side='right', anchor='e')
+            def setAITwoDepth(slider):
+                self.playerTwo.depth = int(slider)
+                self.ai2DepthLabel.configure(text="Depth: = "
+                                             f"{int(slider)}")
+
+            self.ai2DepthSlider = ctk.CTkSlider(
+                master=self.playerTwoFrame,
+                from_=1,
+                to=10,
+                number_of_steps=9,
+                command=setAITwoDepth)
+            self.ai2DepthLabel = ctk.CTkLabel(
+                master=self.playerTwoFrame,
+                text="Depth: = "
+                f"{int(self.ai2DepthSlider.get())}")
+            self.ai2DepthSlider.pack()
+            self.ai2DepthLabel.pack()
+
+        self.playerTwoFrame.pack(pady=10, side='top', anchor='e')
+        self.playerTwoFrame.pack(padx=10, side='right', anchor='e')
 
         self.startingPlayer = ctk.StringVar(value='X')
+
+        # Human player augmentation Hook
+        self._humanPlayerOptionsGUIHook()
 
         def changeStartingPlayer():
             if self.gameMutex is False:
                 self.gamestate.move = self.startingPlayer.get()
 
-        self.startMoveAIOne = ctk.CTkRadioButton(master=self.ai1Frame,
-                                                 variable=self.startingPlayer,
-                                                 value='X',
-                                                 text="Starting",
-                                                 command=changeStartingPlayer)
-        self.startMoveAITwo = ctk.CTkRadioButton(master=self.ai2Frame,
-                                                 variable=self.startingPlayer,
-                                                 value='O',
-                                                 text="Starting",
-                                                 command=changeStartingPlayer)
+        self.startMoveAIOne = ctk.CTkRadioButton(
+            master=self.playerOneFrame,
+            variable=self.startingPlayer,
+            value='X',
+            text="Starting",
+            command=changeStartingPlayer)
+        self.startMoveAITwo = ctk.CTkRadioButton(
+            master=self.playerTwoFrame,
+            variable=self.startingPlayer,
+            value='O',
+            text="Starting",
+            command=changeStartingPlayer)
         self.startMoveAIOne.pack()
         self.startMoveAITwo.pack()
 
-        self.startButton = ctk.CTkButton(master=self.buttonPanel,
-                                         text="Start!",
-                                         width=80,
-                                         height=80,
-                                         command=self.play)
+        self.startButton = ctk.CTkButton(
+            master=self.buttonPanel,
+            text="Start!",
+            width=80,
+            height=80,
+            command=self.play)
         self.startButton.pack(pady=5)
 
-        self.resetButton = ctk.CTkButton(master=self.buttonPanel,
-                                         text="Reset",
-                                         width=80,
-                                         command=self.reset)
+        self.resetButton = ctk.CTkButton(
+            master=self.buttonPanel,
+            text="Reset",
+            width=80,
+            command=self.reset)
         self.resetButton.pack(pady=5)
 
         def slowTime():
@@ -148,31 +172,38 @@ class AIPlayingGUI():
     def display(self):
         pass
 
+    def _humanPlayerOptionsGUIHook(self):
+        pass
+
     def _play(self):
         self.gameMutex = True
 
         def getMode():
             methods = ['baseline', 'minimax', 'alphabeta', 'dynamic']
+            aiOneMode = None
 
-            aiOneModeStr = self.ai1SelectedMethod.get()
-            if aiOneModeStr == 'Baseline':
-                aiOneMode = methods[0]
-            elif aiOneModeStr == 'Minimax':
-                aiOneMode = methods[1]
-            elif aiOneModeStr == 'Alpha Beta Pruning':
-                aiOneMode = methods[2]
-            else:
-                aiOneMode = methods[3]
+            if type(self.playerOne) == Agent:
+                aiOneModeStr = self.ai1SelectedMethod.get()
+                if aiOneModeStr == 'Baseline':
+                    aiOneMode = methods[0]
+                elif aiOneModeStr == 'Minimax':
+                    aiOneMode = methods[1]
+                elif aiOneModeStr == 'Alpha Beta Pruning':
+                    aiOneMode = methods[2]
+                else:
+                    aiOneMode = methods[3]
 
-            aiTwoModeStr = self.ai2SelectedMethod.get()
-            if aiTwoModeStr == 'Baseline':
-                aiTwoMode = methods[0]
-            elif aiTwoModeStr == 'Minimax':
-                aiTwoMode = methods[1]
-            elif aiTwoModeStr == 'Alpha Beta Pruning':
-                aiTwoMode = methods[2]
-            else:
-                aiTwoMode = methods[3]
+            aiTwoMode = None
+            if type(self.playerTwo) == Agent:
+                aiTwoModeStr = self.ai2SelectedMethod.get()
+                if aiTwoModeStr == 'Baseline':
+                    aiTwoMode = methods[0]
+                elif aiTwoModeStr == 'Minimax':
+                    aiTwoMode = methods[1]
+                elif aiTwoModeStr == 'Alpha Beta Pruning':
+                    aiTwoMode = methods[2]
+                else:
+                    aiTwoMode = methods[3]
 
             return (aiOneMode, aiTwoMode,)
 
@@ -183,16 +214,27 @@ class AIPlayingGUI():
                 Unfortunately Python doesn't have true threading so
                 it still lags. But at least the GUI is responsive
                 """
-                result['result'] = self.playerOne.getNextMove(
-                    state=self.gamestate,
-                    depth=self.playerOne.depth,
-                    isMaxPlayer=self.playerOneMax,
-                    mode=getMode()[0 if player == "X" else 1]
+
+                # This was the weirdest bit of code I have written
+                result['result'] = \
+                    self.playerOne.getNextMove(
+                        state=self.gamestate,
+                        depth=self.playerOne.depth,
+                        mode=getMode()[0]
+                ) if player == "X" else \
+                    self.playerTwo.getNextMove(
+                        state=self.gamestate,
+                        depth=self.playerTwo.depth,
+                        mode=getMode()[1]
                 )
-            result = {'result': None}
-            
+
+            result = {'result': self.gamestate}
+
             child = self.gamestate
 
+            if self.gamestate.isTerminal():
+                return self.gamestate
+            
             if player == "X" and type(self.playerOne) == Agent:
                 self.gamestate.move = 'O'
 
@@ -215,30 +257,33 @@ class AIPlayingGUI():
                 t.join()
 
                 child = result['result']
-            else:
+            elif type(self.playerOne) == Human or \
+                    type(self.playerTwo) == Human:
                 # Human player handler. Refer to descendant game GUI class
                 # for way to handle
                 if player == "X":
                     self.playerOne.turn = True
                 elif player == "O":
                     self.playerTwo.turn = True
-                time.sleep(0.5)
+                # time.sleep(0.5)
 
             return child
 
         while not self.gamestate.isTerminal():
+            self.display()
+
             if self.slowTime or self.hasHumanPlayer():
                 if self.gamestate.move == 'X':
                     self.statusText.configure(text="Loading...\nPlayer X turn")
                 else:
                     self.statusText.configure(text="Loading...\nPlayer O turn")
+
             if self.gamestate.move == 'X':      # AI 1
                 child = playersTurn("X")
                 self.gamestate.board = child.board
             else:                               # AI 2
                 child = playersTurn("O")
                 self.gamestate.board = child.board
-            self.display()
             if self.slowTime:
                 time.sleep(1)
 

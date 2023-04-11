@@ -21,10 +21,11 @@ class Human(Player):
 
 
 class Agent(Player):
-    def __init__(self, depth=5):
+    def __init__(self, depth=5, maxPlayer=True):
         super().__init__()
         self.memo = {}
         self.minimaxMethod = None
+        self.__maxPlayer = maxPlayer
         self.depth = depth
 
     def setMinimax(self, mode: str = "alphabeta"):
@@ -95,37 +96,45 @@ class Agent(Player):
         if depth == 0 or state.isTerminal():
             return state.eval()
 
-        # Memoization
-        if state.getMemoization() in self.memo.keys():
-            return self.memo[state.getMemoization()]
-
         alpha = kwargs['alpha']
         beta = kwargs['beta']
 
         if isMaxPlayer:
             value = float('-inf')
             for child in state.getChildren():
-                value = max(value, self.__miniMaxAlphaBeta(
-                    child, depth - 1, False, alpha=alpha, beta=beta))
-                if value > beta:
-                    break   # beta cut off
-                alpha = max(alpha, value)
-                self.memo[state.getMemoization()] = value
+                if child.getMemoization(isMaxPlayer) in self.memo:
+                    value = self.memo[child.getMemoization(isMaxPlayer)]
+                else:
+                    value = max(value, self.__miniMaxABDynamic(
+                        child,
+                        depth - 1,
+                        not isMaxPlayer,
+                        alpha=alpha,
+                        beta=beta)
+                    )
+                    if value > beta:
+                        break   # beta cut off
+                    alpha = max(alpha, value)
+                    self.memo[child.getMemoization(not isMaxPlayer)] = value
         else:
             value = float('inf')
             for child in state.getChildren():
-                value = min(value, self.__miniMaxAlphaBeta(
-                    child, depth - 1, True, alpha=alpha, beta=beta))
-                if value < alpha:
-                    break   # alpha cut off
-                beta = min(beta, value)
-                self.memo[state.getMemoization()] = value
+                if child.getMemoization(not isMaxPlayer) in self.memo:
+                    value = self.memo[child.getMemoization(not isMaxPlayer)]
+                else:
+                    value = min(value, self.__miniMaxABDynamic(
+                        child, depth - 1, isMaxPlayer, alpha=alpha, beta=beta))
+                    if value < alpha:
+                        break   # alpha cut off
+                    beta = min(beta, value)
+                    self.memo[child.getMemoization(isMaxPlayer)] = value
 
         return value
 
-    def getNextMove(self, state: GameState, depth, isMaxPlayer,
+    def getNextMove(self, state: GameState, depth,
                     mode: str = "dynamic"):
         self.setMinimax(mode)
+        isMaxPlayer = self.__maxPlayer
 
         alpha = float('-inf')
         beta = float('inf')
@@ -141,7 +150,7 @@ class Agent(Player):
                                        alpha=alpha, beta=beta)
 
             if isMaxPlayer:
-                if value >= best_value:
+                if value > best_value:
                     best_value = value
                     best_child = child
             else:
